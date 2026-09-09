@@ -18,6 +18,7 @@ const EXIT_ANIMATION_MS = 320;
 export function FullScreenViewSheet({ viewKey, title, eyebrow, subtitle, children, closing = false, onClose }: FullScreenViewSheetProps) {
   const [internalClosing, setInternalClosing] = useState(false);
   const closeTimerRef = useRef<number | null>(null);
+  const sheetRef = useRef<HTMLElement | null>(null);
   const isClosing = closing || internalClosing;
 
   const requestClose = useCallback(() => {
@@ -27,6 +28,36 @@ export function FullScreenViewSheet({ viewKey, title, eyebrow, subtitle, childre
       onClose();
     }, EXIT_ANIMATION_MS);
   }, [isClosing, onClose]);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sheetRef.current?.querySelector<HTMLButtonElement>(".view-sheet-close")?.focus();
+
+    function containFocus(event: KeyboardEvent) {
+      if (event.key !== "Tab") return;
+      const controls = Array.from(sheetRef.current?.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]',
+      ) ?? []).filter((control) => control.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first && last) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last && first) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", containFocus);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", containFocus);
+      previousFocus?.focus({ preventScroll: true });
+    };
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -47,6 +78,7 @@ export function FullScreenViewSheet({ viewKey, title, eyebrow, subtitle, childre
 
   const sheet = (
     <section
+      ref={sheetRef}
       className={`view-sheet-layer ${isClosing ? "is-closing" : ""}`}
       data-sheet-view={viewKey}
       role="dialog"

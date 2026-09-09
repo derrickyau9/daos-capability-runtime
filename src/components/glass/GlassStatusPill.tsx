@@ -14,9 +14,9 @@ const DEFAULT_LABELS: Record<AutomationRuntimeStatus, string> = {
 
 export function GlassStatusPill({ status, label }: GlassStatusPillProps) {
   return (
-    <span className={`glass-status-pill status-${status}`}>
+    <span className={`glass-status-pill status-${status}`} title={label || DEFAULT_LABELS[status]}>
       <i aria-hidden="true" />
-      {label || DEFAULT_LABELS[status]}
+      <span>{label || DEFAULT_LABELS[status]}</span>
     </span>
   );
 }

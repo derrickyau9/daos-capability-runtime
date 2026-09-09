@@ -39,7 +39,6 @@ export function TopNav({
   return (
     <aside className="top-nav" aria-label="Main navigation">
       <div className="brand-lockup">
-        <div className="brand-mark">{dashboardConfig.brandName.slice(0, 1)}</div>
         <div>
           <strong>{dashboardConfig.brandName}</strong>
           <span>Automation</span>
@@ -82,6 +81,7 @@ export function TopNav({
               className={activeView === item.value ? "is-active" : ""}
               onClick={() => onViewChange(item.value)}
               title={item.label}
+              aria-current={activeView === item.value ? "page" : undefined}
             >
               <Icon size={16} />
               <span>{item.label}</span>
@@ -91,7 +91,7 @@ export function TopNav({
       </nav>
       <div className="top-nav-status">
         <GlassStatusPill status={runtime.status} />
-        <span className="local-pill"><Radio size={14} />Local</span>
+        <span className="local-pill" title="Local session"><Radio size={14} /><span>Local</span></span>
       </div>
     </aside>
   );

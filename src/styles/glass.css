@@ -13,6 +13,7 @@
 
 .glass-panel {
   position: relative;
+  min-width: 0;
   contain: layout paint;
   overflow: hidden;
   border-radius: var(--radius-xl);
@@ -60,7 +61,7 @@
 }
 
 .glass-pad-lg {
-  padding: calc(24px * var(--ui-scale));
+  padding: clamp(16px, 2vw, 24px);
 }
 
 .glass-panel.has-glow::after {
