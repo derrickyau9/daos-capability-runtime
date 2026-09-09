@@ -1,0 +1,555 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "app": {
+      "type": "object",
+      "properties": {
+        "vendor": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+        },
+        "surface": {
+          "type": "string",
+          "const": "web"
+        },
+        "profileVersion": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "profileDigest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "vendor",
+        "surface",
+        "profileVersion",
+        "profileDigest"
+      ],
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "decimal",
+              "enum"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "minLength": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 256
+          },
+          "maxLength": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "values": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "description",
+          "sensitive",
+          "minLength",
+          "maxLength",
+          "values"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "decimal",
+              "enum"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "minLength": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 256
+          },
+          "maxLength": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "values": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "description",
+          "sensitive",
+          "minLength",
+          "maxLength",
+          "values"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "targets": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "frame": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+            }
+          },
+          "strategy": {
+            "type": "string",
+            "enum": [
+              "role",
+              "label-adjacent"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "button",
+              "heading",
+              "link",
+              "textbox",
+              "text"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "control": {
+            "type": "string",
+            "enum": [
+              "input",
+              "text"
+            ]
+          },
+          "exact": {
+            "type": "boolean",
+            "const": true
+          },
+          "cardinality": {
+            "type": "number",
+            "const": 1
+          }
+        },
+        "required": [
+          "frame",
+          "strategy",
+          "role",
+          "name",
+          "control",
+          "exact",
+          "cardinality"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "steps": {
+      "minItems": 1,
+      "maxItems": 30,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+          },
+          "action": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "click"
+                  },
+                  "target": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "fill"
+                  },
+                  "target": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+                  },
+                  "input": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target",
+                  "input"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "read"
+                  },
+                  "target": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+                  },
+                  "output": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target",
+                  "output"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "risk": {
+            "type": "string",
+            "enum": [
+              "read",
+              "reversible"
+            ]
+          },
+          "before": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+            }
+          },
+          "after": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+            }
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 15000
+          },
+          "retry": {
+            "type": "object",
+            "properties": {
+              "maxAttempts": {
+                "type": "number",
+                "const": 1
+              },
+              "onlyIf": {
+                "type": "string",
+                "const": "before-action"
+              }
+            },
+            "required": [
+              "maxAttempts",
+              "onlyIf"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "risk",
+          "before",
+          "after",
+          "timeoutMs",
+          "retry"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "properties": {
+        "markers": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+          }
+        },
+        "outputs": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+          }
+        },
+        "invocationBindings": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "frame": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+                }
+              },
+              "strategy": {
+                "type": "string",
+                "enum": [
+                  "role",
+                  "label-adjacent"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "button",
+                  "heading",
+                  "link",
+                  "textbox",
+                  "text"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "control": {
+                "type": "string",
+                "enum": [
+                  "input",
+                  "text"
+                ]
+              },
+              "exact": {
+                "type": "boolean",
+                "const": true
+              },
+              "cardinality": {
+                "type": "number",
+                "const": 1
+              }
+            },
+            "required": [
+              "frame",
+              "strategy",
+              "role",
+              "name",
+              "control",
+              "exact",
+              "cardinality"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "markers",
+        "outputs",
+        "invocationBindings"
+      ],
+      "additionalProperties": false
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9_-]{0,63}$"
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "business",
+              "recoverable",
+              "hard"
+            ]
+          },
+          "response": {
+            "type": "string",
+            "enum": [
+              "return",
+              "wait",
+              "dismiss",
+              "handoff"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "class",
+          "response"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "discoveryRunId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "codex"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "llmCalls": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "observationHashes": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "required": [
+        "discoveryRunId",
+        "provider",
+        "model",
+        "completedAt",
+        "llmCalls",
+        "observationHashes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "version",
+    "description",
+    "app",
+    "inputs",
+    "outputs",
+    "targets",
+    "steps",
+    "checkpoint",
+    "exceptions",
+    "provenance"
+  ],
+  "additionalProperties": false
+}

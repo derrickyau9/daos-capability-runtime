@@ -1,0 +1,391 @@
+{
+  "schemaVersion": "1.0",
+  "id": "prepare-savings-review",
+  "version": "1.0.0",
+  "description": "Locate a member, prepare a savings sub-account, read current savings balance and stop at review. Never submits.",
+  "app": {
+    "vendor": "northstar-training",
+    "surface": "web",
+    "profileVersion": "1.0",
+    "profileDigest": "239aa70aea1896790b1c39a27f03a0e2534eaa3596e6607a5ea9f793d8d71410"
+  },
+  "inputs": {
+    "memberId": {
+      "type": "string",
+      "description": "Member reference supplied at invocation.",
+      "sensitive": true,
+      "minLength": 1,
+      "maxLength": 64,
+      "values": []
+    },
+    "nickname": {
+      "type": "string",
+      "description": "Nickname for the proposed savings sub-account. No submission is performed.",
+      "sensitive": true,
+      "minLength": 1,
+      "maxLength": 64,
+      "values": []
+    }
+  },
+  "outputs": {
+    "savingsBalance": {
+      "type": "decimal",
+      "description": "Existing savings balance in USD, decimal string; returned in memory and redacted on disk.",
+      "sensitive": true,
+      "minLength": 4,
+      "maxLength": 30,
+      "values": []
+    },
+    "reviewStatus": {
+      "type": "enum",
+      "description": "Verified review state. The account has not been opened.",
+      "sensitive": false,
+      "minLength": 1,
+      "maxLength": 64,
+      "values": [
+        "Ready for review"
+      ]
+    }
+  },
+  "targets": {
+    "memberId": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "label-adjacent",
+      "role": "textbox",
+      "name": "Member number",
+      "control": "input",
+      "exact": true,
+      "cardinality": 1
+    },
+    "search": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "role",
+      "role": "button",
+      "name": "Find member",
+      "control": "text",
+      "exact": true,
+      "cardinality": 1
+    },
+    "detail": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "role",
+      "role": "button",
+      "name": "Open member",
+      "control": "text",
+      "exact": true,
+      "cardinality": 1
+    },
+    "balance": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "label-adjacent",
+      "role": "text",
+      "name": "Current savings balance",
+      "control": "text",
+      "exact": true,
+      "cardinality": 1
+    },
+    "prepare": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "role",
+      "role": "button",
+      "name": "New savings sub-account",
+      "control": "text",
+      "exact": true,
+      "cardinality": 1
+    },
+    "nickname": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "label-adjacent",
+      "role": "textbox",
+      "name": "Account nickname",
+      "control": "input",
+      "exact": true,
+      "cardinality": 1
+    },
+    "review": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "role",
+      "role": "button",
+      "name": "Review request",
+      "control": "text",
+      "exact": true,
+      "cardinality": 1
+    },
+    "reviewStatus": {
+      "frame": [
+        "workbench"
+      ],
+      "strategy": "label-adjacent",
+      "role": "text",
+      "name": "Request status",
+      "control": "text",
+      "exact": true,
+      "cardinality": 1
+    }
+  },
+  "steps": [
+    {
+      "id": "step1",
+      "action": {
+        "kind": "fill",
+        "target": "memberId",
+        "input": "memberId"
+      },
+      "risk": "reversible",
+      "before": [
+        "search"
+      ],
+      "after": [
+        "search"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step2",
+      "action": {
+        "kind": "click",
+        "target": "search"
+      },
+      "risk": "read",
+      "before": [
+        "search"
+      ],
+      "after": [
+        "results"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step3",
+      "action": {
+        "kind": "click",
+        "target": "detail"
+      },
+      "risk": "read",
+      "before": [
+        "results"
+      ],
+      "after": [
+        "detail"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step4",
+      "action": {
+        "kind": "read",
+        "target": "balance",
+        "output": "savingsBalance"
+      },
+      "risk": "read",
+      "before": [
+        "detail"
+      ],
+      "after": [
+        "detail"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step5",
+      "action": {
+        "kind": "click",
+        "target": "prepare"
+      },
+      "risk": "reversible",
+      "before": [
+        "detail"
+      ],
+      "after": [
+        "form"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step6",
+      "action": {
+        "kind": "fill",
+        "target": "nickname",
+        "input": "nickname"
+      },
+      "risk": "reversible",
+      "before": [
+        "form"
+      ],
+      "after": [
+        "form"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step7",
+      "action": {
+        "kind": "click",
+        "target": "review"
+      },
+      "risk": "reversible",
+      "before": [
+        "form"
+      ],
+      "after": [
+        "review"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    },
+    {
+      "id": "step8",
+      "action": {
+        "kind": "read",
+        "target": "reviewStatus",
+        "output": "reviewStatus"
+      },
+      "risk": "read",
+      "before": [
+        "review"
+      ],
+      "after": [
+        "review"
+      ],
+      "timeoutMs": 3000,
+      "retry": {
+        "maxAttempts": 1,
+        "onlyIf": "before-action"
+      }
+    }
+  ],
+  "checkpoint": {
+    "markers": [
+      "review"
+    ],
+    "outputs": [
+      "savingsBalance",
+      "reviewStatus"
+    ],
+    "invocationBindings": {
+      "memberId": {
+        "frame": [
+          "workbench"
+        ],
+        "strategy": "label-adjacent",
+        "role": "text",
+        "name": "Member reference",
+        "control": "text",
+        "exact": true,
+        "cardinality": 1
+      },
+      "nickname": {
+        "frame": [
+          "workbench"
+        ],
+        "strategy": "label-adjacent",
+        "role": "text",
+        "name": "Account nickname",
+        "control": "text",
+        "exact": true,
+        "cardinality": 1
+      }
+    }
+  },
+  "exceptions": [
+    {
+      "code": "not_found",
+      "class": "business",
+      "response": "return"
+    },
+    {
+      "code": "validation",
+      "class": "business",
+      "response": "return"
+    },
+    {
+      "code": "loading",
+      "class": "recoverable",
+      "response": "wait"
+    },
+    {
+      "code": "interstitial",
+      "class": "recoverable",
+      "response": "dismiss"
+    },
+    {
+      "code": "permission",
+      "class": "hard",
+      "response": "handoff"
+    },
+    {
+      "code": "session_expired",
+      "class": "hard",
+      "response": "handoff"
+    },
+    {
+      "code": "app_error",
+      "class": "hard",
+      "response": "handoff"
+    },
+    {
+      "code": "unknown_dialog",
+      "class": "hard",
+      "response": "handoff"
+    }
+  ],
+  "provenance": {
+    "discoveryRunId": "52b352b7-a422-4bda-a74a-bc7ab46947c3",
+    "provider": "codex",
+    "model": "gpt-5.6-sol",
+    "completedAt": "2026-09-09T05:00:07.887Z",
+    "llmCalls": 9,
+    "observationHashes": [
+      "fd903a93e6df410e94c4df9735cbe1847cee8fe4e92f4cec8f510a63b8b8ef2e",
+      "fd903a93e6df410e94c4df9735cbe1847cee8fe4e92f4cec8f510a63b8b8ef2e",
+      "49f8cc7fdfc4c7188f026613fb6658204421a89f51252df8ad0a6bd3ef4397d7",
+      "f8c05959e3b7fed01656e8736461758cf3b61f6b772829be06ea201ee73930e1",
+      "f8c05959e3b7fed01656e8736461758cf3b61f6b772829be06ea201ee73930e1",
+      "612393d8c9c0aeb2f90175a129d40d2a5ded20385cf90b8f753356eb7b440306",
+      "612393d8c9c0aeb2f90175a129d40d2a5ded20385cf90b8f753356eb7b440306",
+      "73cb084835b7bcf0456bc730bb00e19bd308c11b9aff990f2169a28ea26296e8",
+      "73cb084835b7bcf0456bc730bb00e19bd308c11b9aff990f2169a28ea26296e8"
+    ]
+  }
+}

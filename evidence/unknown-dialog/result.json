@@ -1,0 +1,23 @@
+{
+  "runId": "2d4acf44-ca10-403a-a024-99f6b03215ed",
+  "sessionId": "b75d0d25-378d-4f53-b405-aed6f1819255",
+  "capabilityId": "prepare-savings-review",
+  "mode": "replay",
+  "status": "failure",
+  "code": "handoff_timeout",
+  "step": 1,
+  "expected": [
+    "results"
+  ],
+  "observed": [
+    "search",
+    "unknown_dialog",
+    "vendor_v1"
+  ],
+  "outputs": {},
+  "llmCalls": 0,
+  "recoveries": 0,
+  "handoffs": 1,
+  "errorId": "a851b51f-0316-4efc-8345-35fa7b38535c",
+  "cause": "unknown_dialog"
+}

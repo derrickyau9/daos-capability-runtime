@@ -1,0 +1,8 @@
+{
+  "origins": ["http://127.0.0.1:4317"],
+  "routes": ["/legacy", "/legacy/frame", "/legacy/ui.js"],
+  "actions": ["click", "fill", "read"],
+  "maxSteps": 20,
+  "runTimeoutMs": 600000,
+  "handoffTimeoutMs": 180000
+}

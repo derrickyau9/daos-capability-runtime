@@ -1,0 +1,22 @@
+{
+  "runId": "22ada81c-6046-45e6-b742-cd801c482f1d",
+  "sessionId": "70249f55-a10b-4dc4-8b3d-81d098469fbc",
+  "capabilityId": "prepare-savings-review",
+  "mode": "replay",
+  "status": "failure",
+  "code": "checkpoint_timeout",
+  "step": 1,
+  "expected": [
+    "results"
+  ],
+  "observed": [
+    "loading",
+    "vendor_v1"
+  ],
+  "outputs": {},
+  "llmCalls": 0,
+  "recoveries": 1,
+  "handoffs": 1,
+  "errorId": "6aae1acc-fca5-42ec-9b66-0712be966668",
+  "cause": "checkpoint_timeout"
+}

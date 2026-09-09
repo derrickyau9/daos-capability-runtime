@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "click",
+        "fill",
+        "read",
+        "complete",
+        "handoff"
+      ]
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "",
+        "memberId",
+        "search",
+        "detail",
+        "prepare",
+        "nickname",
+        "review",
+        "balance",
+        "reviewStatus",
+        "dismiss",
+        "unlock",
+        "confirm"
+      ]
+    },
+    "input": {
+      "type": "string",
+      "enum": [
+        "",
+        "memberId",
+        "nickname"
+      ]
+    },
+    "output": {
+      "type": "string",
+      "enum": [
+        "",
+        "savingsBalance",
+        "reviewStatus"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "advance",
+        "supply_input",
+        "extract_output",
+        "verify_goal",
+        "blocked"
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "target",
+    "input",
+    "output",
+    "reason"
+  ],
+  "additionalProperties": false
+}

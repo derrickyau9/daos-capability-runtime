@@ -1,0 +1,23 @@
+{
+  "runId": "679bcea1-7e51-46e1-bdeb-4337ff6996f3",
+  "sessionId": "a04a5e20-5b5f-477e-ad9f-07bc7a66a0db",
+  "capabilityId": "prepare-savings-review",
+  "mode": "replay",
+  "status": "failure",
+  "code": "handoff_timeout",
+  "step": 1,
+  "expected": [
+    "results"
+  ],
+  "observed": [
+    "search",
+    "permission",
+    "vendor_v1"
+  ],
+  "outputs": {},
+  "llmCalls": 0,
+  "recoveries": 0,
+  "handoffs": 1,
+  "errorId": "8a25b7de-9b39-4252-9e65-d90f383bbe8c",
+  "cause": "permission"
+}

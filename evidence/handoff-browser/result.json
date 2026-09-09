@@ -1,0 +1,23 @@
+{
+  "runId": "22d0635b-233e-4bab-97bf-6a21f5fd0749",
+  "sessionId": "a560b822-4feb-4d93-9af2-81cb34314fc1",
+  "capabilityId": "prepare-savings-review",
+  "mode": "replay",
+  "status": "success",
+  "code": "checkpoint_verified",
+  "step": 7,
+  "expected": [
+    "review"
+  ],
+  "observed": [
+    "review",
+    "vendor_v1"
+  ],
+  "outputs": {
+    "savingsBalance": "[REDACTED]",
+    "reviewStatus": "Ready for review"
+  },
+  "llmCalls": 0,
+  "recoveries": 0,
+  "handoffs": 1
+}

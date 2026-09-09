@@ -1,0 +1,22 @@
+{
+  "runId": "10520266-2623-4d9c-a088-ea804862404a",
+  "sessionId": "cff749b8-5278-4913-96ea-317b27380c8e",
+  "capabilityId": "prepare-savings-review",
+  "mode": "replay",
+  "status": "business_outcome",
+  "code": "validation",
+  "step": 1,
+  "expected": [
+    "results"
+  ],
+  "observed": [
+    "search",
+    "validation",
+    "vendor_v1"
+  ],
+  "outputs": {},
+  "llmCalls": 0,
+  "recoveries": 0,
+  "handoffs": 0,
+  "errorId": "54f2c435-7e63-48be-824e-260131571dfd"
+}

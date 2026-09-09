@@ -1,0 +1,37 @@
+{
+  "name": "daos-capability-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "tsx runtime/server.ts",
+    "dev": "vite --host 127.0.0.1 --port 5178",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
+    "discover": "tsx runtime/cli.ts discover",
+    "replay": "tsx runtime/cli.ts replay",
+    "demo": "tsx scripts/demo.ts",
+    "schema": "tsx scripts/schema.ts",
+    "verify:evidence": "tsx scripts/verify-evidence.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "playwright": "^1.58.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.19.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  }
+}
