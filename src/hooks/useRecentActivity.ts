@@ -1,15 +1,16 @@
 import { useMemo } from "react";
 import type { DashboardActivity } from "../lib/types/activity";
 import type { AutomationLogEntry } from "../lib/types/automation";
+import { logText } from '../lib/runtimeText';
 
 export function useRecentActivity(logs: AutomationLogEntry[]) {
   return useMemo<DashboardActivity[]>(() => {
-    const activities = logs.slice(-6).reverse().map((log) => ({
+    const activities = logs.slice(0, 6).map((log) => ({
       id: log.id,
       time: formatTime(log.time),
       type: log.type,
       title: log.source,
-      subtitle: log.message,
+      subtitle: logText(log.message),
     }));
 
     if (activities.length) return activities;
@@ -19,8 +20,8 @@ export function useRecentActivity(logs: AutomationLogEntry[]) {
         id: "placeholder-health",
         time: "now",
         type: "success",
-        title: "System ready",
-        subtitle: "Waiting for the next automation event.",
+        title: "No runs yet",
+        subtitle: "Start a run to see its progress here.",
       },
     ];
   }, [logs]);

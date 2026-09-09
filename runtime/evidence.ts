@@ -27,7 +27,7 @@ export class Evidence {
     const name = `failure-${step}-${this.seq}.html`;
     const escape = (s: string) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
     // Rich signal: a structural DOM projection. No raw DOM, input values, or screenshots.
-    const html = `<!doctype html><meta charset="utf-8"><title>Redacted surface evidence</title><style>body{font:16px system-ui;padding:32px;background:#edf1f8}pre{background:white;padding:24px;white-space:pre-wrap}</style><h1>Redacted surface projection</h1><p>Run ${this.runId} · step ${step} · sensitive cells, inputs and unknown prose omitted. DOM structure and control geometry come from the live frames.</p><pre>${escape(JSON.stringify({ observation, dom: dom || { unavailable: true } }, null, 2))}</pre>`;
+    const html = `<!doctype html><meta charset="utf-8"><title>Run snapshot</title><style>body{font:16px system-ui;padding:32px;background:#edf1f8}pre{background:white;padding:24px;white-space:pre-wrap}</style><h1>Page state when the run stopped</h1><p>Run ${this.runId} · step ${step} · Values and unrecognized text are hidden. The structure and element positions below were captured from the open page.</p><pre>${escape(JSON.stringify({ observation, dom: dom || { unavailable: true } }, null, 2))}</pre>`;
     writeFileSync(join(this.dir, name), html);
     this.event('failure_evidence', { step, file: name, format: 'redacted-dom-projection', contentHash: hash(html) });
     return name;

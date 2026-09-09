@@ -1,1 +1,40 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DaOS · Live handoff</title><link rel="stylesheet" href="/operator.css"><header><a href="/">DaOS</a><span>LIVE SESSION CONTROL</span><strong>Training environment</strong></header><main><p class="eyebrow">Operator workspace</p><h1>Pick up where automation paused.</h1><p>The controls below operate the original browser session. All actions stay in the run’s audit trail.</p><section class="bar"><div><small>Session</small><code id="session">Connecting…</code></div><div><small>Control owner</small><strong id="owner">—</strong></div><div><small>Run status</small><strong id="status">—</strong></div></section><section class="grid"><article><h2>Intervention</h2><p id="reason">Waiting for runtime</p><p id="expected"></p><button id="claim">Take control</button><button id="resume" disabled>Return to automation</button><button id="stop" class="danger">Stop run</button><p id="message" role="status"></p><h3>Current screen</h3><div id="markers"></div></article><article><h2>Live controls</h2><p>Protected values are omitted. Enter a replacement only when needed.</p><div id="controls"></div></article></section><article><h2>Event trail</h2><div id="events"></div></article></main><script src="/operator.js"></script></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DaOS · Operator session</title>
+  <link rel="stylesheet" href="/operator.css">
+</head>
+<body>
+  <header><a href="/">DaOS</a><span>Operator session</span><strong>Local training app</strong></header>
+  <main>
+    <p class="eyebrow">Operator controls</p>
+    <h1>Resume a paused run</h1>
+    <p>These controls use the browser page where the run stopped. Manual actions are recorded in the run log.</p>
+    <section class="bar">
+      <div><small>Session</small><code id="session">Connecting…</code></div>
+      <div><small>Who has control</small><strong id="owner">—</strong></div>
+      <div><small>Run status</small><strong id="status">—</strong></div>
+    </section>
+    <section class="grid">
+      <article>
+        <h2>What needs attention</h2>
+        <p id="reason">Loading run details…</p><p id="expected"></p>
+        <button id="claim">Take control</button>
+        <button id="resume" disabled>Return to automation</button>
+        <button id="stop" class="danger">Stop run</button>
+        <p id="message" role="status"></p>
+        <h3>Current screen</h3><div id="markers"></div>
+      </article>
+      <article>
+        <h2>Page controls</h2>
+        <p>Field values are hidden. Enter a new value only if the page needs one.</p>
+        <div id="controls"></div>
+      </article>
+    </section>
+    <article><h2>Run log</h2><div id="events"></div></article>
+  </main>
+  <script type="module" src="/operator.js"></script>
+</body>
+</html>

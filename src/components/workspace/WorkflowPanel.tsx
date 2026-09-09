@@ -1,6 +1,7 @@
 import { CheckCircle2, CircleDot, Loader2, OctagonAlert } from "lucide-react";
 import type { AutomationTask, AutomationTaskStatus } from "../../lib/types/automation";
 import { GlassPanel } from "../glass/GlassPanel";
+import { runText } from '../../lib/runtimeText';
 
 type WorkflowPanelProps = {
   tasks: AutomationTask[];
@@ -20,8 +21,8 @@ export function WorkflowPanel({ tasks, compact = false }: WorkflowPanelProps) {
       <div className="panel-title-row">
         <div>
           <p className="eyebrow">Workflows</p>
-          <h2>Task queue</h2>
-          <span>Live runs, control ownership, and verified outcomes.</span>
+          <h2>Run history</h2>
+          <span>Recent runs and their results.</span>
         </div>
         <strong className="panel-count">{tasks.length}</strong>
       </div>
@@ -36,23 +37,23 @@ export function WorkflowPanel({ tasks, compact = false }: WorkflowPanelProps) {
 }
 
 function TaskRow({ task }: { task: AutomationTask }) {
-  const Icon = STATUS_ICONS[task.status];
+  const Icon = task.resultStatus === 'failure' ? OctagonAlert : task.resultStatus === 'business_outcome' ? CircleDot : STATUS_ICONS[task.status];
   return (
-    <article className={`task-row status-${task.status}`}>
+    <article className={`task-row status-${task.status} result-${task.resultStatus || 'pending'}`}>
       <span className="task-status-icon"><Icon size={16} /></span>
       <div className="task-main">
         <div>
           <strong>{task.title}</strong>
-          <em>{task.owner}</em>
+          <em>{runText('owners',task.owner)}</em>
         </div>
-        <small>{task.note}</small>
+        <small title={task.note}>{runText('messages',task.note)}</small>
         <div className="task-progress" aria-label={`${task.progress}% complete`}>
           <i style={{ width: `${Math.max(0, Math.min(100, task.progress))}%` }} />
         </div>
       </div>
       <div className="task-meta">
-        <span>{task.status}</span>
-        <em>{task.priority}</em>
+        <span>{runText('statuses',task.resultStatus || task.status)}</span>
+        {task.priority === 'high' && <em>Needs review</em>}
       </div>
     </article>
   );

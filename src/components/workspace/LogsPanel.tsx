@@ -1,6 +1,7 @@
 import { ScrollText } from "lucide-react";
 import type { AutomationLogEntry } from "../../lib/types/automation";
 import { GlassPanel } from "../glass/GlassPanel";
+import { logText } from '../../lib/runtimeText';
 
 type LogsPanelProps = {
   logs: AutomationLogEntry[];
@@ -13,8 +14,8 @@ export function LogsPanel({ logs, compact = false }: LogsPanelProps) {
       <div className="panel-title-row">
         <div>
           <p className="eyebrow">Logs</p>
-          <h2>Runtime log</h2>
-          <span>Recent automation events and command receipts.</span>
+          <h2>Run log</h2>
+          <span>Actions and checkpoints, in the order they happened.</span>
         </div>
         <ScrollText size={20} />
       </div>
@@ -24,7 +25,7 @@ export function LogsPanel({ logs, compact = false }: LogsPanelProps) {
           <article className={`log-row type-${log.type}`} key={log.id}>
             <time>{formatLogTime(log.time)}</time>
             <strong>{log.source}</strong>
-            <span>{log.message}</span>
+            <span title={log.message}>{logText(log.message)}</span>
           </article>
         ))}
       </div>

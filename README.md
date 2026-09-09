@@ -1,29 +1,34 @@
 # DaOS Capability Runtime
 
-A small computer-use runtime built on the **DaOS Automation Panel Framework**. An LLM discovers a workflow against a live legacy-style banking UI; the runtime turns successful actions into a typed capability and replays it without a model. A fenced control lease lets an operator repair the original session and return it to automation.
+This project records and replays a workflow in a small banking application. During discovery, an LLM chooses actions from the controls visible on the page. A successful run becomes a JSON capability with input parameters, output definitions and checkpoints. Replay follows that capability without calling the model.
 
-**Only synthetic training data.** This repository contains no real customers, credentials, production DaOS data or bank integrations. The fixture is a browser iframe with tables, unlabeled inputs and no test IDs or business API. The workflow searches a member, opens details, prepares a savings sub-account and stops at review. Account submission is blocked.
+The demo searches for a member, reads their savings balance, prepares a savings sub-account and stops at the review screen. If the session expires, an operator can take control of the same browser page, restore the session and let the run continue. Final account submission is blocked.
+
+The panel is based on the supplied **DaOS Automation Panel Framework**. The target application is local and uses synthetic records only. Its forms sit inside an iframe and use table labels beside inputs, with no test IDs or business API.
 
 ## Setup
 
-Node.js 22+ and npm. Windows, macOS or Linux:
+Use Node.js 22 or newer and npm on Windows, macOS or Linux:
 
 ```sh
 npm ci
 npx playwright install chromium
 npm run build
+npm start
 ```
 
-On Linux, `npx playwright install --with-deps chromium` also installs browser OS dependencies. Use `npm start` and open [the DaOS panel](http://127.0.0.1:4317). The server binds only to loopback. No credentials are needed to replay, run the demo or run tests.
+Open [the DaOS panel](http://127.0.0.1:4317). On Linux, use `npx playwright install --with-deps chromium` if browser dependencies are missing. The server listens on loopback only.
 
-For discovery choose one model connection:
+Replay, tests and the offline demo do not need a model account. For discovery, choose a connection:
 
-- **Codex:** install the official Codex CLI, run `codex login`, then select `--provider codex`. The submitted discovery uses the already authenticated CLI as an ephemeral structured LLM transport. Each step is a fresh real model request; no recorded answers are substituted. `CODEX_MODEL` and `CODEX_BIN` are optional. The CLI must support `--ephemeral`, `--ignore-user-config` and `--output-schema`.
-- **OpenAI API:** set `OPENAI_API_KEY` and optionally `OPENAI_MODEL` in the shell, then use `--provider openai`. Defaults to `gpt-5.4-mini`. Never place an actual key in a committed file. `.env.example` documents names; this project does not automatically load dotenv files. This adapter is implemented but the committed live evidence uses Codex.
+- **Codex:** install the official Codex CLI and run `codex login`. Use `--provider codex`. The CLI must support `--ephemeral`, `--ignore-user-config` and `--output-schema`. `CODEX_MODEL` selects a model available to your account; `CODEX_BIN` can point to the CLI executable. The saved discovery used `gpt-5.6-sol`.
+- **OpenAI API:** set `OPENAI_API_KEY` in your shell and use `--provider openai`. `OPENAI_MODEL` defaults to `gpt-5.4-mini`. This adapter is implemented, but the saved live run used Codex.
 
-## Exact discovery → replay demo
+`.env.example` lists the settings. The app does not load `.env` files automatically. Keep keys in your shell environment and use parameter names, rather than personal details, in goals.
 
-Stop `npm start` before these CLI commands: each command starts its own local fixture and operator service on port 4317, then shuts it down. Supply `--port 4320` to use another free port.
+## Run discovery, then replay
+
+Stop `npm start` before using the commands below. Each CLI command starts its own local application and operator service on port 4317, then closes them when the run finishes. Add `--port 4320` if 4317 is already in use.
 
 ```sh
 npm run discover -- --provider codex --goal "Find the member using memberId, prepare a savings sub-account using nickname, and reach account review. Return savingsBalance and reviewStatus. Do not submit." --save var/capability.json
@@ -31,9 +36,11 @@ npm run replay -- --artifact var/capability.json --params-file examples/second-m
 npm run replay -- --artifact var/capability.json --params-file examples/not-found.json
 ```
 
-The inputs are parameter references during discovery; their values stay inside the executor. Outputs are returned to the CLI caller. Run evidence is written under `var/runs/<run-id>/`; persisted output values are redacted. The saved artifact contains no concrete input values. `--target` accepts an entry URL, constrained by the policy; this build supports the included vendor profile, not arbitrary websites.
+Discovery makes a fresh model request at each step. It receives the current screen and available controls, without a supplied action sequence. The executor fills parameter values and reads outputs; those values are not sent to the model.
 
-To run the complete offline demonstration from the committed genuine discovery artifact:
+The CLI returns typed outputs to its caller. Logs go to `var/runs/<run-id>/`, with financial outputs redacted in saved results. The capability stores parameter names rather than the values used to record it. `--target` accepts an entry URL within the configured allowlist. This implementation supports the included Northstar profile and savings-review contract.
+
+To try the saved capability without a model connection:
 
 ```sh
 npm run demo
@@ -41,43 +48,46 @@ npm test
 npm run verify:evidence
 ```
 
-The demo covers a second member, not-found, validation, slowness, a known interstitial, same-session handoff, permission denial, timeout and an unexpected dialog. It writes fresh results to `var/demo/`. Its operator is explicitly scripted for repeatability; the operator interface below is usable by a person.
+The demo runs nine cases: success with different inputs, a missing member, validation failure, slow loading, a maintenance notice, session expiry, permission denial, timeout and an unexpected dialog. It writes new results under `var/demo/`. The session-expiry case uses a scripted operator so the command can finish unattended. The next section shows how to take over yourself.
 
-## Real manual handoff
+## Take over a paused session
 
 ```sh
 npm run replay -- --artifact evidence/capability.json --params-file examples/second-member.json --scenario session-expired
 ```
 
-1. Open the **operator URL printed by the command**. Wait for `session_expired`.
-2. Click **Take control**. The browser context and page stay alive; the runtime cedes its lease.
-3. Click **Restore training session** under Live controls. This button represents manual session reauthentication in the synthetic fixture.
-4. Click **Return to automation**. The runtime verifies the expected screen and absence of hard errors, then continues to review on the same session.
+1. Open the operator URL printed by the command and wait for the expired-session message.
+2. Click **Take control**.
+3. Under **Page controls**, click **Restore training session**. This is the sample app's replacement for signing in again.
+4. Click **Return to automation**. The runtime checks the page before continuing.
 
-Returning early is rejected. A second operator cannot claim the same lease. Old tokens and epochs stop working after resume. A blocked run times out after three minutes, or **Stop run** cancels it immediately. Irreversible actions remain blocked even in the operator console. Use the panel's **Expired session → operator handoff** scenario for the same flow visually.
+The browser page stays open throughout. Returning before the session is repaired is rejected. Only one operator can hold control, and an old claim stops working after control is returned. **Stop run** cancels the run; an unanswered intervention times out after three minutes. Account submission stays blocked during manual control.
 
-## Structure and contracts
+You can also select the expired-session case in the dashboard and open the operator page from the run card.
 
-| Path | Purpose |
+## Code map
+
+| Path | What it contains |
 | --- | --- |
-| `runtime/schema.ts`, `schema/` | Strict typed capability, decisions, action and field contracts; exported JSON Schema |
-| `runtime/engine.ts`, `control.ts` | Discovery/replay, checkpoints, outcomes, fenced control transfer |
-| `runtime/surface.ts` | Browser adapter; exact accessibility labels and adjacent table cells in named frames |
-| `runtime/profile.ts`, `policy.ts` | Trusted vendor vocabulary, locator binding and independent action/network policy |
-| `runtime/model.ts` | Model connections; imported only as a type by the replay engine |
-| `src/`, `operator/` | DaOS panel integrated through `/api/automation/*`; same-session operator controls |
-| `fixture/` | Entirely synthetic legacy application; UI interaction only |
-| `evidence/` | Genuine discovery artifact and logs, replay outcomes, handoff evidence |
-| `REPORT.md` | Architecture, decisions, trade-offs and deliberate cuts |
+| `runtime/schema.ts`, `schema/` | Capability types and generated JSON Schema |
+| `runtime/engine.ts`, `control.ts` | Discovery, replay, checkpoints and session ownership |
+| `runtime/surface.ts` | Browser observation and actions inside named frames |
+| `runtime/profile.ts`, `policy.ts` | Control definitions, input/output contracts and allowlists |
+| `runtime/model.ts` | Codex and OpenAI connections |
+| `src/`, `operator/` | DaOS dashboard and operator page |
+| `fixture/` | The synthetic legacy application |
+| `evidence/` | Saved discovery, replay and handoff records |
+| `REPORT.md` | Design decisions and limitations |
+| `REVIEW.md` | Requirement-by-requirement submission check |
 
-Result status is one of `success` (typed outputs), `business_outcome` (`not_found` or `validation`), or `failure`. Results carry run/session IDs, step, expected/observed markers, error code, model call count and intervention/recovery counts. The HTTP dashboard deliberately returns redacted outputs; the direct runtime/CLI result is the agent invocation boundary for sensitive outputs.
+A run returns `success` with outputs, a `business_outcome` such as `not_found`, or a `failure`. The result also identifies the run, session, step, expected and observed state, and any interventions or recoveries. The CLI and direct runtime return sensitive outputs to the caller; saved results and the HTTP dashboard redact them.
 
-An optional `--policy path.json` accepts the shape in `examples/policy.json`; origin, exact routes, permitted action types, step and time limits are configurable. Policy cannot grant an artifact permission to click an unapproved target or submit an account. Profile-specific locators and business semantics are deliberately trusted configuration, not LLM-generated authority.
+Use `--policy examples/policy.json` to supply an allowlist and execution limits. The example's origin must match the port you use. Policy can restrict routes and action types, but cannot permit an unapproved control or account submission. Changes to the trusted vendor profile need separate review.
 
-Run `npm run schema` after schema changes. `npm run dev` runs Vite on 5178 while `npm start` serves the runtime on 4317. The supported interface is the control room; scheduling is deliberately omitted. The visual framework's original generic command components remain as reusable source.
+For frontend development, run `npm start` for the backend and `npm run dev` for Vite on port 5178. Run `npm run schema` after changing the schema definitions.
 
-## Provenance and limitations
+## Scope and provenance
 
-See [DAOS_PROVENANCE.md](DAOS_PROVENANCE.md) for the exact framework reuse. DaOS provided the existing visual/control shell; this project supplies its working backend and control-transfer model. No other DaOS repository or dataset was copied.
+The seven required areas are covered for the included application. The [design report](REPORT.md) explains how the interfaces could extend to desktop applications and multiple institutions; those adapters are not implemented. There is no production authentication, persistent browser recovery, scheduler or general-purpose sensitive-data detector.
 
-This is a focused single-worker training implementation. It does not claim production bank readiness, general-purpose PII detection, native desktop support, process-crash continuation or distributed operator authentication. Public evidence uses structural DOM projections that omit all unknown text and field values. See the seven sections in [REPORT.md](REPORT.md) for the limits and next steps.
+[DAOS_PROVENANCE.md](DAOS_PROVENANCE.md) lists the framework code that was reused. No customer dataset or production DaOS configuration was imported. AI tools were used during development and review. The [evidence notes](evidence/README.md) distinguish the live model run, scripted handoff test and browser-operated demonstration.

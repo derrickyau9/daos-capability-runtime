@@ -1,5 +1,6 @@
 import { CheckCircle2, Info, Radio, ShieldAlert } from "lucide-react";
 import type { AutomationNotification } from "../../lib/types/automation";
+import { runText } from '../../lib/runtimeText';
 
 type NotificationHistoryRailProps = {
   notifications: AutomationNotification[];
@@ -31,7 +32,7 @@ export function NotificationHistoryRail({ notifications, open }: NotificationHis
           ) : (
             <div className="notification-empty">
               <strong>No notifications</strong>
-              <small>Automation receipts and connector updates will appear here.</small>
+              <small>Requests for operator help will appear here.</small>
             </div>
           )}
         </div>
@@ -48,7 +49,7 @@ function NotificationRow({ item }: { item: AutomationNotification }) {
       <span className="notification-row-icon"><Icon size={15} /></span>
       <div>
         <strong>{item.title}</strong>
-        <small>{item.message}</small>
+        <small title={item.message}>{runText('messages',item.message)}</small>
         {meta && <em>{meta}</em>}
       </div>
       <time>{formatNotificationTime(item.time)}</time>

@@ -9,6 +9,7 @@ import { ActionSchema, CapabilitySchema, RuntimeFault } from './schema.js';
 import { defaultPolicy, Policy } from './policy.js';
 import { CodexProvider, OpenAIProvider } from './model.js';
 import { DEFAULT_GOAL } from './profile.js';
+import uiText from './ui-text.json';
 
 export const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 export const scenarios = ['normal', 'slow', 'timeout', 'permission', 'app-error', 'unknown-dialog', 'interstitial', 'session-expired', 'drift', 'duplicate', 'bad-output', 'wrong-member'] as const;
@@ -25,7 +26,7 @@ export function createServer(port = 4317, evidenceRoot = join(projectRoot, 'var/
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src 'self'; frame-ancestors 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'");
-    // Loopback-only service + origin/host checks; this is deliberately not a remotely exposed operator console.
+    // This console is local. Check host and origin before accepting control requests.
     if (req.headers.host !== `127.0.0.1:${port}` && req.headers.host !== `localhost:${port}`) { res.status(403).json({ code: 'host_denied' }); return; }
     if (req.method !== 'GET' && ((req.headers.origin && req.headers.origin !== origin && req.headers.origin !== 'http://127.0.0.1:5178') || !req.is('application/json'))) { res.status(403).json({ code: 'origin_denied' }); return; }
     next();
@@ -66,7 +67,7 @@ export function createServer(port = 4317, evidenceRoot = join(projectRoot, 'var/
       engineVersion: '1.0.0', lastRunLabel: latest ? latest.status : 'No runs yet', simulation: false, secureMode: true, throughput: all.filter(r => r.result?.status === 'success').length, queueDepth: 0,
       successRate: all.filter(r => r.result).length ? Math.round(100 * all.filter(r => r.result?.status === 'success').length / all.filter(r => r.result).length) : 0,
       autoRun: { enabled: false, running: false, intervalMinutes: 0 } }, autoRun: { enabled: false, running: false, intervalMinutes: 0 },
-      tasks: all.slice(-10).reverse().map(r => ({ id: r.id, title: `${r.options.mode} · savings review`, owner: r.control.owner, status: r.status, priority: r.status === 'blocked' ? 'high' : 'normal', progress: r.status === 'done' ? 100 : Math.min(95, r.step * 10), updatedAt: new Date().toISOString(), note: r.result?.code || r.intervention?.reason || 'Executing live UI' })),
+      tasks: all.slice(-10).reverse().map(r => ({ id: r.id, title: `${r.options.mode === 'discovery' ? 'Discovery' : 'Replay'} · savings review`, owner: r.control.owner, status: r.status, resultStatus: r.result?.status, priority: r.status === 'blocked' ? 'high' : 'normal', progress: r.status === 'done' ? 100 : Math.min(95, r.step * 10), updatedAt: new Date().toISOString(), note: r.result?.code || r.intervention?.reason || 'Working in the application' })),
       integrations: [{ id: 'legacy-core', name: 'Northstar training core', status: 'connected', scope: 'UI only · synthetic records', latencyMs: 0, lastSeenAt: new Date().toISOString() }],
       logs: events.map((event, index) => ({ id: `${event.runId}-${index}`, time: event.time, type: String(event.type).includes('failure') ? 'error' : 'info', source: 'runtime', message: `${event.type} · step ${event.step ?? '—'}` })),
       notifications: active.filter(r => r.intervention).map(r => ({ id: r.intervention!.id, time: r.intervention!.createdAt, type: 'warning', category: 'workflow', source: 'runtime', title: 'Operator needed', message: r.intervention!.reason, target: 'Control room' })),
@@ -80,6 +81,7 @@ export function createServer(port = 4317, evidenceRoot = join(projectRoot, 'var/
   app.post('/api/automation/resume', (_req,res) => res.status(409).json({ code: 'use_operator_lease_to_resume' }));
   app.post('/api/automation/auto/:command', (_req,res) => res.status(422).json({ code: 'scheduling_out_of_scope' }));
   app.get('/operator/:id', (_req,res) => res.sendFile(join(projectRoot, 'operator/index.html')));
+  app.get('/operator-copy.json', (_req,res) => res.json(uiText));
   app.get('/operator.js', (_req,res) => res.sendFile(join(projectRoot, 'operator/operator.js')));
   app.get('/operator.css', (_req,res) => res.sendFile(join(projectRoot, 'operator/operator.css')));
   app.use(express.static(join(projectRoot, 'dist')));

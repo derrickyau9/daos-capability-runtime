@@ -1,4 +1,4 @@
-// Deliberately hostile fixture: iframe, tables and unlabelled inputs, no test IDs and no business API.
+// Training app with an iframe, tables and unlabeled inputs. It has no test IDs or business API.
 // Every person and account is synthetic. No production DaOS data is imported.
 const scenario = sessionStorage.getItem('trainingScenario') || 'normal';
 const content = document.getElementById('content');

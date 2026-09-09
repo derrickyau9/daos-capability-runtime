@@ -12,8 +12,8 @@ export function IntegrationsPanel({ integrations }: IntegrationsPanelProps) {
       <div className="panel-title-row">
         <div>
           <p className="eyebrow">Connectors</p>
-          <h2>Integration health</h2>
-          <span>Application surfaces available to this runtime.</span>
+          <h2>Configured application</h2>
+          <span>The local application used for discovery and replay.</span>
         </div>
         <Cable size={20} />
       </div>
@@ -26,7 +26,7 @@ export function IntegrationsPanel({ integrations }: IntegrationsPanelProps) {
               <strong>{item.name}</strong>
               <small>{item.scope}</small>
             </div>
-            <em>{item.latencyMs} ms</em>
+            <em>Local</em>
           </article>
         ))}
       </div>

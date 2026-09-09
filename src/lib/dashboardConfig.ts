@@ -1,7 +1,7 @@
 export const dashboardConfig = {
   brandName: "DaOS",
   productName: "Capability Runtime",
-  tagline: "Discover a workflow. Record a capability. Run it with control.",
+  tagline: "Record and replay the savings review workflow.",
   locale: "en-US",
   apiBase: "/api/automation",
   mockMode: false,

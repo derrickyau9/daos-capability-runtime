@@ -26,21 +26,21 @@ export function SettingsPanel({ privacyMasked, onTogglePrivacy }: SettingsPanelP
         <div>
           <p className="eyebrow">Settings</p>
           <h2>Runtime settings</h2>
-          <span>Connected to the local capability runtime. All training records are synthetic.</span>
+          <span>Settings for the local demo. All records are synthetic.</span>
         </div>
       </div>
 
       <section className="settings-control-strip">
         <GlassCard title="Locale" value={dashboardConfig.locale} icon={<Globe2 size={16} />} tone="blue" />
         <GlassCard
-          title="Panel privacy mask"
+          title="Diagnostic result"
           value={privacyMasked ? "******" : "Visible"}
-          subtitle={privacyMasked ? "Click to show" : "Click to mask"}
+          subtitle={privacyMasked ? "Result hidden" : "Result visible"}
           icon={<ShieldCheck size={16} />}
           tone={privacyMasked ? "green" : "orange"}
         >
           <GlassButton size="sm" variant="ghost" onClick={onTogglePrivacy}>
-            {privacyMasked ? "Show" : "Mask"}
+            {privacyMasked ? "Show result" : "Hide result"}
           </GlassButton>
         </GlassCard>
         <GlassCard title="Mode" value={dashboardConfig.mockMode ? "Mock" : "Connected"} icon={<SlidersHorizontal size={16} />} tone="green" />
@@ -56,8 +56,8 @@ export function SettingsPanel({ privacyMasked, onTogglePrivacy }: SettingsPanelP
         <div className="panel-title-row is-compact">
           <div>
             <p className="eyebrow">API</p>
-            <h3>Endpoint lab</h3>
-            <span>Read-only checks against the connected backend.</span>
+            <h3>Connection checks</h3>
+            <span>Check whether the local server responds.</span>
           </div>
         </div>
         <div className="endpoint-grid">
@@ -79,7 +79,7 @@ export function SettingsPanel({ privacyMasked, onTogglePrivacy }: SettingsPanelP
             <strong>Result</strong>
             {diagnostics.testResult && <small>{String(diagnostics.testResult.endpoint || "")}</small>}
           </div>
-          <pre className="privacy-sensitive" data-mask="******">{stringifySafe(diagnostics.testResult || diagnostics.diagnostics || {})}</pre>
+          <pre>{privacyMasked ? "Diagnostic result hidden." : stringifySafe(diagnostics.testResult || diagnostics.diagnostics || {})}</pre>
         </div>
       </section>
     </GlassPanel>

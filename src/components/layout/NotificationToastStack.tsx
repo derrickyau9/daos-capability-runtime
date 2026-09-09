@@ -1,6 +1,7 @@
 import { BellRing } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { AutomationNotification } from "../../lib/types/automation";
+import { runText } from '../../lib/runtimeText';
 
 type NotificationToastStackProps = {
   notifications: AutomationNotification[];
@@ -45,7 +46,7 @@ export function NotificationToastStack({ notifications }: NotificationToastStack
           <span><BellRing size={16} /></span>
           <div>
             <strong>{item.title}</strong>
-            <small>{item.message}</small>
+            <small title={item.message}>{runText('messages',item.message)}</small>
           </div>
         </article>
       ))}

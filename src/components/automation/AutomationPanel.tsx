@@ -30,8 +30,8 @@ export function AutomationPanel({
       <div className="panel-title-row is-compact">
         <div>
           <p className="eyebrow">Automation</p>
-          <h2>Command surface</h2>
-          <span>Run, pause, sync, and stop generic automation work from one portable panel.</span>
+          <h2>Run controls</h2>
+          <span>Start, pause or stop a run, and refresh its status.</span>
         </div>
         <AutomationStatusPill runtime={runtime} />
       </div>

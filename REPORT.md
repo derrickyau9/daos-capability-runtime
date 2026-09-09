@@ -1,66 +1,85 @@
 # Architecture
 
-The implemented slice prepares a savings sub-account and stops at review in a local synthetic legacy core. One Node/TypeScript worker owns a Playwright browser context; a React control room uses the supplied DaOS Automation Panel Framework. Its `/api/automation/snapshot`, run, pause and stop adapters now report and control actual work. A separate operator page is a thin control proxy into that same context. No business API is called.
+I used a local banking application so the project could exercise failures without accessing a real institution. The workflow searches for a member, reads a savings balance, prepares a sub-account and stops at review. The application has an iframe, table-based forms and unlabeled inputs. It has no business API.
+
+One Node/TypeScript process owns the browser and run state. Playwright handles browser interaction. The supplied DaOS Automation Panel Framework provides the dashboard, while a separate operator page sends manual actions to the same browser session.
 
 ```mermaid
 flowchart LR
-  G[Goal + parameter bindings] --> D[LLM discovery]
-  D --> P[Policy + control lease]
+  G[Goal and parameters] --> D[LLM discovery]
+  D --> P[Policy and control ownership]
   P --> S[Surface adapter]
-  S --> U[Live legacy UI]
+  S --> U[Application UI]
   S --> O[Redacted observation]
   O --> D
-  D --> A[Versioned capability]
-  A --> R[Deterministic replay]
+  D --> A[Capability JSON]
+  A --> R[Replay]
   R --> P
-  P <--> H[Operator handoff]
-  P --> E[Structured evidence]
+  H[Operator] <--> P
+  P --> E[Run evidence]
 ```
 
-The model selects one visible control at a time; it receives a projected observation, parameter definitions, prior decisions and collected output names. It never receives input values or balances. The executor owns parameter binding, policy, reads and checkpoint verification. Discovery has step, wall-time and repeated-decision limits. The committed run uses authenticated Codex noninteractive requests with JSON Schema output and ephemeral sessions; an OpenAI Responses adapter is also provided. These are documented provider mechanisms ([Codex](https://learn.chatgpt.com/docs/non-interactive-mode), [structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs)). Replay has no model dependency injected into its execution path; tests inject a provider that throws if called.
+The model chooses one action at a time from visible controls. It sees parameter definitions, previous decisions and the names of outputs already collected. The executor supplies values, reads results and verifies checkpoints. Discovery stops on step or time limits, repeated decisions, or an explicit request for help.
 
-One worker and in-memory sessions make ownership easy to reason about. On-disk evidence survives completion; process restart does not resume a browser. This deliberately spends complexity on control and contracts, not queues.
+The saved discovery used authenticated Codex requests with structured output and ephemeral sessions. An OpenAI Responses adapter is also included, though it was not used for the submitted evidence. Replay does not receive a model provider. A test passes one that throws on any call to catch accidental use.
+
+Keeping sessions in one process made ownership and cancellation easier to test. Logs survive completion, but a process restart loses the browser session. I accepted that limit rather than adding recovery infrastructure before the execution contract was settled.
 
 # Artifact schema
 
-`schema/capability.schema.json` is generated from strict Zod types. Schema version and capability version are distinct. A capability has a vendor/profile digest, typed inputs and outputs, target descriptions, ordered actions, per-step pre/post screen markers, bounded timeouts, an explicit exception taxonomy and a final checkpoint. The final checkpoint also compares member and nickname cells with invocation inputs; merely reaching a review page is insufficient. Decimal currency is a string, avoiding floating-point money errors.
+The capability schema is defined in Zod and exported to JSON Schema. It separates the schema version from the capability version. Each artifact includes typed inputs and outputs, a vendor profile digest, target definitions, ordered actions, per-step checkpoints, timeouts, exception handling and a final success condition.
 
-Fill actions reference an input name, and read actions reference an output name. No values, credentials, arbitrary JavaScript, model transcript or executable selector strings are recorded. Provenance links model request receipts and observation hashes to the discovery run. The artifact is human-reviewable, but provenance alone is not approval or authenticity.
+A fill action names an input parameter; a read action names an output. Amounts use decimal strings. The final checkpoint verifies both the review screen and its member/nickname values against the invocation. Reaching another member's review screen cannot count as success.
 
-The trusted vendor profile supplies static control vocabulary, locator descriptions, safe action grants and business semantics. **Discovery learns the order, not the entire application vocabulary.** This is a deliberate seam: this slice implements one capability contract, not a universal task compiler. A saved artifact copies the observed controls' target definitions and is validated against the runtime's independent profile and policy. Editing an artifact cannot authorize a new control, weaken the success predicate or relabel submission as safe.
+The artifact contains no input values, model transcript or executable code. Discovery records the controls it used and the screen changes it observed. Model request receipts and observation hashes link it to the source run, but do not approve it for use.
+
+One limit matters here: the vendor profile supplies the vocabulary, locator definitions and savings-review contract. The model discovers the action order within that contract. It does not build a profile for an arbitrary application. Replay checks the artifact against the independently configured profile and policy, so editing a target or success condition cannot grant more access.
 
 # Determinism & error handling
 
-The surface uses exact accessible button names, named frame paths and an exact table label followed by its adjacent cell for unlabeled fields. There are no test IDs, positional `nth()` guesses or fuzzy fallbacks. Every target must resolve to exactly one visible control. Ambiguity and changed labels stop execution. The model does not choose recovery paths during replay.
+Targets use exact accessible button names and named frame paths. For legacy fields, the adapter finds an exact table label and uses its adjacent value cell. A target must resolve to one visible control. Missing, duplicate or renamed controls stop the run; there is no fuzzy fallback.
 
-Before and after each action, the runtime checks vendor/screen markers and exception states. It rechecks immediately before acting. Known loading is a bounded wait; a maintenance interstitial is dismissed once. `not_found` and `validation` return business outcomes without escalation or subsequent clicks. Permission denial, session expiry, unexpected dialogs and app errors request intervention. Missing targets and expired waits produce hard failures with the original step and safe diagnostic context. An actionability trial occurs before a click; an action is never blindly retried after the click boundary. Unknown post-action failure remains a failure even if an operator inspects it: no exactly-once guarantee is invented.
+The engine checks the screen before and after each action, then checks again immediately before acting. Replay follows these rules:
 
-Results distinguish status, code, outputs, expected/observed markers, session/run identity and recovery/handoff/model counts. Output shape and invocation identity are checked at completion. Tests exercise the real UI with different parameters and injected runtime errors. Timestamps and latency naturally vary; “deterministic” means fixed actions and declared branches, not identical event bytes.
+- A missing member or validation message returns a business outcome and stops further actions.
+- A known loading screen gets a bounded wait. A maintenance notice can be dismissed once.
+- Session expiry, permission denial, application errors and unexpected dialogs request operator help.
+- A missing target or expired wait records a failure and offers the live session for inspection.
+
+A click gets an actionability check before execution. Once attempted, it is not retried automatically. If an unknown error occurs after an action, operator inspection does not turn the run into a success. This avoids claiming certainty about whether an action took effect.
+
+Results include a status, code, outputs, step, expected/observed state and run/session IDs. Tests cover changed parameters, incorrect review identity, invalid outputs and injected application errors. Determinism means fixed actions and declared branches; timestamps and loading duration still vary.
 
 # Heterogeneity & multi-tenant
 
-The `Surface` seam separates observe/act/verify/close from flow interpretation. This build already handles an iframe and nonsemantic table form. A desktop adapter could map target descriptions to UI Automation/AX ancestry; a visual adapter would need anchor regions, reference image hashes, calibrated coordinates, confidence thresholds and pre/post screenshots. The current schema intentionally rejects unsupported target strategies. Adding one requires a schema revision, adapter implementation and compatibility tests rather than silently treating coordinates like selectors.
+`Surface` defines observation, actions, verification, snapshots and cleanup separately from the flow interpreter. The implementation uses a browser adapter. A desktop adapter would need to map targets to UI Automation or accessibility ancestry. A visual adapter would also need reference images, anchors, coordinate calibration and confidence checks. Unsupported target strategies are rejected today; adding one requires a schema revision and adapter tests.
 
-At scale, store an immutable vendor capability with a semantic contract, then bind an institution/app instance to a reviewed profile version. Permit narrow overrides for entry point, frame ancestry, branding vocabulary and control labels; never allow an override to widen policy or erase checkpoints. Pin capabilities to profile digests. Promote a new binding only after synthetic contract tests and canary runs, preserving old versions for rollback. Vendor markers and unique target cardinality provide basic fail-closed drift detection here. They do not prove whole-application compatibility; a production registry would maintain tested version ranges and route failures to binding review, not automatic rerecording against customer data.
+For reuse across institutions, I would keep the semantic capability at vendor level and bind each application instance to a reviewed profile version. Overrides could change entry points, frame ancestry, branding and control labels. They could not remove checkpoints or widen permissions.
+
+The current profile digest and exact target matching detect some incompatibilities. They do not establish compatibility with every vendor version. A production registry would track tested versions, run synthetic checks before promotion and retain older bindings for rollback. A failed binding would go for review rather than trigger automatic recording against customer data.
 
 # Escalation & handoff
 
-Control has four states: `automation → unclaimed → human → automation`, with `closed` terminal. A promise gate serializes every UI action and ownership mutation. Ceding waits for in-flight work, increments a fencing epoch, records context and releases the action gate while waiting. Claiming produces an in-memory opaque token and a new epoch; stale or competing operators are rejected. A model answer received after an ownership change is discarded.
+Ownership is explicit: `automation`, `unclaimed`, `human` or `closed`. Every UI action and ownership change goes through one serialized gate. When automation pauses, it waits for in-flight work, increments the ownership epoch and records an intervention. The operator claims control with an opaque token tied to a new epoch. Competing claims and stale tokens are rejected. A model answer arriving after ownership changes is discarded.
 
-The operator page shows current safe controls, markers, expected state and the event trail. Its buttons invoke the original browser page through the fenced endpoint; no new app session is opened. Operators can type or click allowed controls, repair the synthetic expired session and signal return. Resume requires the current epoch/token, vendor marker, expected checkpoint and no hard error. Human actions log target/action references and resulting safe state, never typed values. The loop then continues from the suspended checkpoint. Manual discovery is not silently compiled into reusable steps; it requires rerecording before artifact emission.
+The operator page shows the reason for stopping, the expected screen, visible controls and recent events. Its buttons operate the original Playwright page. The operator can fill allowed fields, repair the sample app's expired session and return control. Resume checks the token, epoch, vendor marker, expected screen and remaining errors before continuing.
 
-The local UI is intentionally minimal. The demo script marks its operator as scripted; committed browser-operated evidence separately demonstrates the same path. Production work would add authenticated operators, queue routing, expiring distributed leases, encrypted session hosting and crash recovery. A lost operator in this slice times out conservatively; token recovery/reassignment is not implemented.
+Manual actions are recorded by action and target, with typed values omitted. If discovery needed manual actions, it must be recorded again before producing a capability. The replay handoff test compares the actual Page object before and after transfer.
+
+The offline demo uses a scripted operator. A separate saved run exercises the operator page through browser controls, with the development assistant acting as operator. It is not presented as a test with an independently recruited person. The control transfer is real; reauthentication is simulated by a training-app button.
 
 # Safety
 
-The browser starts with an empty isolated context. Exact origin/path allowlists apply to navigation, frames and all requests; non-GET traffic, popups, downloads and WebSockets are blocked, and service workers are disabled. Actions are allowlisted per trusted control. Reads and reversible preparation are allowed; final account submission is blocked for both automation and the operator. The runtime never treats an LLM risk label or artifact as authority. Headed direct control is rejected so input cannot bypass the handoff audit seam.
+Each run starts in an isolated browser context. Exact origin and path allowlists cover navigation, frames and requests. Non-GET requests, popups, downloads and WebSockets are blocked; service workers are disabled. Each control has allowed actions and a risk classification. Reading and reversible preparation are permitted. Submission is blocked for both automation and operators. Direct headed-browser control is disabled because it would bypass the action log.
 
-The target contains only generated training records. No DaOS customer export is used. Evidence is a positive projection of known UI labels, markers and typed events: unknown prose, raw DOM, screenshots, credentials and input/financial values are not persisted. Rich failure evidence is a rendered, redacted DOM projection. Sensitive outputs go only to the invocation caller; disk results and the panel redact them. Model reason codes are closed vocabulary. Hash-chained JSONL detects accidental edits; it is not tamper-proof storage or cryptographic attestation of the provider.
+All records in the sample app are synthetic. Model observations and evidence include only known labels, markers and selected event fields. Failure snapshots preserve DOM hierarchy and control rectangles while replacing unknown text and inputs. Financial outputs are returned to the caller but redacted on disk and in the dashboard.
 
-This is not a general DLP system. Input data and live cookies still exist in process/browser memory; a caller can log its returned outputs. Natural-language goals must not contain secrets. The fixed profile and synthetic target are the privacy boundary for this submission. Real deployments require institution-specific data classification, approved model hosting/retention, operator access control and encrypted evidence storage. The loopback console has host/origin checks, but local user authentication is deliberately absent.
+These protections rely on a trusted, fixed profile. The event writer is not a general-purpose redaction service: new event producers must use the same restricted fields. Goals must not contain secrets. Values and cookies still exist in memory, and callers can log returned outputs. The JSONL hash chain catches edits but is not signed or tamper-proof storage.
+
+Production use would need institution-specific data classification, approved model retention settings, authenticated operators and encrypted session/evidence storage. Host and origin checks protect the local console; they do not replace user authentication.
 
 # Cuts
 
-Implemented depth is the capability contract, explicit error branches and same-session handoff. Cut: native desktop execution, arbitrary-app discovery, generic OCR/vision targeting, production credentials, distributed scheduling, capability approval/catalog infrastructure and crash-safe replay. The DaOS framework's original generic components remain reusable; its mock runtime is replaced and unsupported scheduling is not offered in the main control room.
+I left out desktop execution, arbitrary-app discovery, OCR targeting, production credentials, distributed scheduling, an artifact approval/catalog service and recovery after a process crash. The original DaOS command components remain in source, but unsupported scheduling is not exposed in the working dashboard.
 
-Next work would make operator identity and session hosting production-safe, add a reviewed artifact/binding registry, then implement a second vendor/version adapter to test reuse. For irreversible workflows, add business reconciliation and idempotency semantics at the application boundary before allowing retries or unattended execution. A broader feature list would provide less confidence than proving those boundaries.
+The next steps would be operator authentication and session hosting, a reviewed capability/profile registry, and a second application version to test reuse. Before permitting irreversible work, I would add application-specific reconciliation so retries depend on whether the earlier action actually took effect.

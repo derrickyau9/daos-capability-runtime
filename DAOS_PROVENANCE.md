@@ -1,22 +1,24 @@
 # DaOS framework provenance
 
-This project was created inside the user's `DaOS Repo` folder, from the supplied **DaOS Automation Panel Framework**, export dated 2026-05-26.
+This project uses the DaOS Automation Panel Framework export dated 2026-05-26. It lives in the supplied `DaOS Repo` folder.
 
-Source relative to the containing DaOS Repo:
+The original export is at:
 
 `DaOS Legacy/DaOS-Automation-Panel-Framework-20260526/DaOS-Automation-Panel-Framework/`
 
-Reused framework parts:
+## Reused code
 
-- React/TypeScript/Vite entry and dashboard composition.
-- `src/components/glass/`: panel, button, card, tabs, select and status primitives.
-- `src/components/layout/`: app shell, navigation, notification rail, toast stack, activity bar and full-screen sheets.
-- `src/components/workspace/`: workflow, integrations, logs and metrics presentations.
-- `src/styles/daos-theme.css`, `glass.css`, `dashboard.css`: original DaOS visual system.
-- `src/lib/types/automation.ts` and `/api/automation/*` client adapter contract.
+- The React, TypeScript and Vite entry point and dashboard structure.
+- Glass UI components: panels, buttons, cards, tabs, selects and status indicators.
+- The app shell, navigation, notifications, activity bar and panel dialogs.
+- Workflow, integration, log and metric components.
+- The DaOS theme and base styles.
+- Automation types and the `/api/automation/*` client contract.
 
-Integration changes replace `useAutomationRuntime`'s mock state with real polling, implement the generic snapshot/run/pause/stop/sync endpoints, add the runtime control room, connect actual tasks/events/interventions, update diagnostics, and remove unsupported commands from the active UI. Original generic command components remain in source for reuse; they are not a separate automation engine.
+## Changes in this project
 
-New work: `runtime/`, `fixture/`, `operator/`, tests, schemas, evidence, documentation and `RuntimeWorkbench`/its CSS. These implement the orchestration, capability recording, deterministic interpreter, guarded surface, model transport and fenced handoff.
+The dashboard now polls the working runtime instead of mock state. The snapshot, run, pause, stop and sync endpoints connect the framework to actual runs. The control room starts discovery and replay, displays interventions and opens the operator page. Layout fixes cover the navigation rail, dialogs and smaller screens.
 
-No retail backend, Magento bridge, customer exports, production configuration, databases, credentials or other DaOS data were used. The source export did not include a license file; this submission preserves provenance and does not invent an upstream license grant. Dependency licenses remain with their authors.
+The execution engine, browser adapter, capability schema, policy, model connections, operator controls, synthetic application, tests and evidence were added for this assignment. Generic command components from the export remain available in source; the dashboard does not offer their unsupported scheduling features.
+
+No customer exports, production configuration, databases, credentials or other DaOS datasets were copied. The export contained no license file, so this repository does not assign a license to the upstream framework. Third-party dependencies retain their own licenses.

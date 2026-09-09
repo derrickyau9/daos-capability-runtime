@@ -33,6 +33,7 @@ export type AutomationTask = {
   title: string;
   owner: string;
   status: AutomationTaskStatus;
+  resultStatus?: "success" | "business_outcome" | "failure";
   priority: "low" | "normal" | "high";
   progress: number;
   updatedAt: string;

@@ -29,28 +29,28 @@ export function DashboardPage() {
   const viewSheetMeta = useMemo<Record<string, { eyebrow: string; title: string; subtitle: string }>>(() => ({
     automation: {
       eyebrow: "Automation",
-      title: "Command Surface",
-      subtitle: "Discover capabilities, replay recorded workflows, and route interventions.",
+      title: "Run a workflow",
+      subtitle: "Choose discovery or replay, then follow the run.",
     },
     workflows: {
       eyebrow: "Workflows",
-      title: "Task Queue",
-      subtitle: "Real runs, ownership, progress, and business outcomes.",
+      title: "Run history",
+      subtitle: "Recent runs, their progress and results.",
     },
     integrations: {
       eyebrow: "Connectors",
-      title: "Integration Health",
-      subtitle: "Local agents, webhook receivers, workers, and data sources can report status here.",
+      title: "Configured application",
+      subtitle: "The local application used by this demo.",
     },
     logs: {
       eyebrow: "Logs",
-      title: "Runtime Log",
-      subtitle: "Recent command receipts and automation events.",
+      title: "Run log",
+      subtitle: "Actions and checkpoints recorded during each run.",
     },
     settings: {
       eyebrow: "Settings",
-      title: "Framework Settings",
-      subtitle: "Local runtime connection, privacy controls, and diagnostics.",
+      title: "Settings",
+      subtitle: "Connection details and diagnostic checks.",
     },
   }), []);
 

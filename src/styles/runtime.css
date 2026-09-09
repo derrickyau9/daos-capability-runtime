@@ -221,14 +221,36 @@
   overflow-wrap: anywhere;
 }
 
-.run-badge.status-done {
+.run-badge.status-success {
   background: #d7eadd;
   color: #326449;
 }
 
-.run-badge.status-blocked {
+.run-badge.status-blocked,
+.run-badge.status-business_outcome {
   background: #efd7b3;
   color: #8d5e25;
+}
+
+.run-badge.status-failure {
+  background: #f2dbd6;
+  color: #963f31;
+}
+
+.task-row.result-failure .task-status-icon {
+  color: var(--red);
+}
+
+.task-row.result-failure .task-progress i {
+  background: var(--red);
+}
+
+.task-row.result-business_outcome .task-status-icon {
+  color: var(--orange);
+}
+
+.task-row.result-business_outcome .task-progress i {
+  background: var(--orange);
 }
 
 .runtime-run p {

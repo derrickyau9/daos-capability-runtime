@@ -62,12 +62,12 @@ export function TopNav({
           className={`rail-tool-button ${privacyMasked ? "is-active" : ""}`}
           type="button"
           onClick={onTogglePrivacy}
-          title={privacyMasked ? "Show sensitive data" : "Mask sensitive data"}
-          aria-label={privacyMasked ? "Show sensitive data" : "Mask sensitive data"}
+          title={privacyMasked ? "Show diagnostic result" : "Hide diagnostic result"}
+          aria-label={privacyMasked ? "Show diagnostic result" : "Hide diagnostic result"}
           aria-pressed={privacyMasked}
         >
           {privacyMasked ? <EyeOff size={16} /> : <Eye size={16} />}
-          <span>{privacyMasked ? "Masked" : "Mask"}</span>
+          <span>{privacyMasked ? "Hidden" : "Visible"}</span>
         </button>
       </div>
       <nav className="top-nav-links">
